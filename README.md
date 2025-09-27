@@ -93,14 +93,13 @@ normalize(q, eps=1e-8) -> Tensor[..., 4]
 
 For (a=(w_1,x_1,y_1,z_1)) and (b=(w_2,x_2,y_2,z_2)),
 
-[
-\begin{aligned}
-w &= w_1 w_2 - x_1 x_2 - y_1 y_2 - z_1 z_2,\
-x &= w_1 x_2 + x_1 w_2 + y_1 z_2 - z_1 y_2,\
-y &= w_1 y_2 - x_1 z_2 + y_1 w_2 + z_1 x_2,\
+$$\begin{aligned}
+w &= w_1 w_2 - x_1 x_2 - y_1 y_2 - z_1 z_2,\\
+x &= w_1 x_2 + x_1 w_2 + y_1 z_2 - z_1 y_2,\\
+y &= w_1 y_2 - x_1 z_2 + y_1 w_2 + z_1 x_2,\\
 z &= w_1 z_2 + x_1 y_2 - y_1 x_2 + z_1 w_2.
-\end{aligned}
-]
+\end{aligned}$$
+
 
 **Properties (the key ones for ML):**
 
