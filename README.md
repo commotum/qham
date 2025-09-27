@@ -232,6 +232,3 @@ You can represent left multiplication as a 4×4 matrix (L(q)) so that (q⊗r = L
 ### One‑liner summary for the README
 
 > **`qham`** provides a single, training‑ready API for quaternion math—write it once, run it fast (PyTorch → Triton → CUDA)—with clear `(...,4)` shapes, full broadcasting, and no 4×4 matrix overhead.
-
-If you want, I can also generate a shorter “Quick Reference” panel (copy/paste cards) or tailor a full README with badges, install commands, and a “Performance” section once you lock the initial benchmarks.
-
