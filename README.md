@@ -1,7 +1,3 @@
-Below is a drop‑in **README section** for **`qham`**—clear English, beginner‑friendly, and ready to paste. It explains the unified API, shapes, broadcasting, autograd, and includes practical examples (including your RGB→embedding case).
-
----
-
 # qham — Unified Hamilton‑product API (Torch ↔ Triton ↔ CUDA)
 
 `qham` is a small library that does one thing well: **fast quaternion math for machine learning**, with a single API that runs on:
