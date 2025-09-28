@@ -40,8 +40,18 @@ Y = left_broadcast(q, W, backend="auto")  # (Nq, 4)
 embed = Y.flatten()                       # (embed_dim,)
 ```
 
-> Backend: `backend="auto" | "torch" | "triton" | "cuda"`.
-> Environment override: set `QHAM_BACKEND=triton` (or `cuda`).
+> Backend selection
+>
+> - Passing `backend="torch"` uses the PyTorch reference path.
+> - Passing `backend="auto"` consults the environment:
+>   - If `QHAM_BACKEND=torch`, selects `"torch"`.
+>   - `QHAM_BACKEND=triton|cuda` are recognized but not implemented yet (will raise a helpful error).
+> - If no env override is set, `backend="auto"` defaults to `"torch"`.
+>
+> <!-- FUTURE (uncomment when implemented):
+> When Triton/CUDA are enabled, `backend="auto"` with no env override will prefer the fastest available:
+> CUDA → Triton → Torch.
+> -->
 
 ---
 
@@ -55,12 +65,13 @@ normalize(q, eps=1e-8) -> Tensor[..., 4]
 ```
 
 - `hamilton(a, b)` — Hamilton product $a \otimes b$ with full broadcasting. `a` and `b` are real tensors whose last dimension is 4, representing `[w, x, y, z]`.
-- `left_broadcast(q, W)` — Apply one quaternion `q` to every row in `W`.
+- `left_broadcast(q, W)` — Apply left multiplication by `q` to every row in `W`.
+  - Computes `Y[i] = q ⊗ W[i]`.
   - `q`: shape `(4,)`
   - `W`: shape `(Nq, 4)` (learned weight quaternions)
   - returns: `(Nq, 4)`
 - `conj(q)` — Quaternion conjugate: `[w, x, y, z] → [w, -x, -y, -z]`.
-- `normalize(q)` — Unit‑normalize along the last axis.
+- `normalize(q)` — Unit‑normalize along the last axis using `q / clamp_min(‖q‖, eps)` to avoid division by zero in low precision.
 
 ---
 
@@ -75,7 +86,7 @@ normalize(q, eps=1e-8) -> Tensor[..., 4]
   - `(N, 4)` — a batch of N quaternions
   - `(B, H, L, 4)` — quaternions per batch/head/position (common in attention models)
 
-- Device & dtype: real tensors (`float32`, `float16`, `bfloat16`) on CPU or GPU. Inputs must be on the same device and (usually) the same dtype.
+- Device & dtype: real tensors (`float32`, `float16`, `bfloat16`) on exactly one device (CPU xor a single CUDA device). Inputs must share the same device and same dtype; no implicit promotion.
 
 ---
 
@@ -211,3 +222,27 @@ Left multiplication can be represented as a $4\times4$ matrix $L(q)$ so that $q\
 - No surprises — shapes are explicit (`(...,4)`), broadcasting is standard PyTorch, and autograd is guaranteed.
 
 ---
+
+## Requirements
+
+- Python: 3.9–3.12
+- PyTorch: ≥ 2.x (Torch backend only for now)
+- CUDA (optional): to run on GPU via the Torch backend
+- Triton/CUDA backends: coming soon (commented out in code/docs for now)
+
+## Install
+
+```bash
+pip install qham           # when published
+
+# From source (editable dev install):
+pip install -e .
+# or (if you expose extras):
+# pip install -e .[dev]
+```
+
+To get a recommended PyTorch wheel channel for your system (CPU, cu121, cu118), run:
+
+```bash
+python scripts/recommend_install.py
+```
