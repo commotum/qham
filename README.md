@@ -33,9 +33,11 @@ c = hamilton(a, b)                       # shape (4,)
 
 # One quaternion across many rows (RGB -> embedding)
 q = torch.tensor([0., 0.2, -0.1, 0.7], device="cuda", dtype=torch.float16)  # pure imaginary RGB quaternion
-W = torch.randn(4096, 4, device="cuda", dtype=torch.float16)                # learned weight quaternions
-Y = left_broadcast(q, W, backend="auto")  # (4096, 4)
-embed = Y.flatten()                       # (4096*4,)
+embed_dim = 4096
+Nq = embed_dim // 4
+W = torch.randn(Nq, 4, device="cuda", dtype=torch.float16)                 # learned weight quaternions
+Y = left_broadcast(q, W, backend="auto")  # (Nq, 4)
+embed = Y.flatten()                       # (embed_dim,)
 ```
 
 > Backend: `backend="auto" | "torch" | "triton" | "cuda"`.
@@ -47,7 +49,7 @@ embed = Y.flatten()                       # (4096*4,)
 
 ```python
 hamilton(a, b, *, backend="auto") -> Tensor[... , 4]
-left_broadcast(q, W, *, backend="auto") -> Tensor[..., Nq, 4]
+left_broadcast(q, W, *, backend="auto") -> Tensor[Nq, 4]
 conj(q) -> Tensor[..., 4]
 normalize(q, eps=1e-8) -> Tensor[..., 4]
 ```
@@ -100,7 +102,7 @@ Properties:
 
 ---
 
-## Broadcasting (the “batching magic”) in `hamilton`
+## Broadcasting
 
 PyTorch broadcasting rules apply to all leading dims (the last dim is fixed at 4):
 
@@ -150,7 +152,7 @@ with torch.cuda.amp.autocast(dtype=torch.float16):
 ```python
 from qham import left_broadcast
 
-# q: one RGB mapped to a pure-imag quaternion [0, r, g, b] in [-1,1]
+# q: one RGB mapped to a pure imaginary quaternion [0, r, g, b] in [-1,1]
 q = torch.tensor([0., 0.2, -0.1, 0.7], device="cuda", dtype=torch.bfloat16)
 
 # W: one learned quaternion per 4-d slice of the embedding
@@ -209,4 +211,3 @@ Left multiplication can be represented as a $4\times4$ matrix $L(q)$ so that $q\
 - No surprises — shapes are explicit (`(...,4)`), broadcasting is standard PyTorch, and autograd is guaranteed.
 
 ---
-
